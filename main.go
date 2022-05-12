@@ -5,12 +5,14 @@ import (
 	hash "consistent-hashing/hash"
 )
 
-const (
-	initServerNumber = 100
-	initUser         = 100000
-)
+/*
+ TODO:
+	3. benchmarking
+	4. testing
+*/
 
 func main() {
-	hashRing := hash.GetRing(initServerNumber, initUser)
+	hashRing := hash.GetRing()
+
 	cli.Cli(hashRing)
 }

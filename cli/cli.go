@@ -2,7 +2,7 @@ package cli
 
 import (
 	"bufio"
-	hash "consistent-hashing/hash"
+	"consistent-hashing/hash"
 	"fmt"
 	"os"
 	"strings"
@@ -10,6 +10,7 @@ import (
 
 func Cli(hashRing *hash.HashRing) {
 	scanner := bufio.NewScanner(os.Stdin)
+
 	for {
 		var input string
 		fmt.Printf("> ")
