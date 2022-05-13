@@ -5,6 +5,7 @@ import (
 	K "consistent-hashing/key"
 	"consistent-hashing/server"
 	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -12,11 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	initServerNumber  = 3
-	initKeyNumber     = 10
-	virtualNodeNumber = 4
-)
+var config struct {
+	InitServerNumber  int `json:"initServerNumber"`
+	InitKeyNumber     int `json:"initKeyNumber"`
+	VirtualNodeNumber int `json:"virtualNodeNumber"`
+}
 
 type HashRing struct {
 	Servers      []*server.Server
@@ -25,8 +26,19 @@ type HashRing struct {
 }
 
 func GetRing() *HashRing {
+	file, err := os.Open("../config.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
 
-	if initServerNumber < 1 {
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		fmt.Printf("%#v", err)
+	}
+
+	if config.InitServerNumber < 1 {
 		fmt.Printf("You need to have at least one server.\n")
 		os.Exit(1)
 	}
@@ -44,9 +56,9 @@ func GetRing() *HashRing {
 
 // initialize a slice of server
 func (h *HashRing) initServers() {
-	serverSlice := make([]*server.Server, initServerNumber)
+	serverSlice := make([]*server.Server, config.InitServerNumber)
 
-	for i := 0; i < initServerNumber; i++ {
+	for i := 0; i < config.InitServerNumber; i++ {
 		serverName := fmt.Sprintf("Server%d", i)
 		serverSlice[i] = h.initServer(serverName)
 	}
@@ -60,7 +72,7 @@ func (h *HashRing) initServers() {
 func (h *HashRing) initServer(serverName string) *server.Server {
 	key := uuid.New().String()
 	ringPosition := getRingPosition(key)
-	virtualNodes := make([]*server.VirtualNode, virtualNodeNumber)
+	virtualNodes := make([]*server.VirtualNode, config.VirtualNodeNumber)
 
 	s := &server.Server{
 		Name:         serverName,
@@ -68,7 +80,7 @@ func (h *HashRing) initServer(serverName string) *server.Server {
 		RingPosition: ringPosition,
 	}
 
-	for j := 0; j < virtualNodeNumber; j++ {
+	for j := 0; j < config.VirtualNodeNumber; j++ {
 		virtualNodeKey := uuid.New().String()
 		virtualNodeRingPosition := getRingPosition(virtualNodeKey)
 
@@ -89,9 +101,9 @@ func (h *HashRing) initServer(serverName string) *server.Server {
 }
 
 func (h *HashRing) initKeys() {
-	keySlice := make([]*K.Key, initKeyNumber)
+	keySlice := make([]*K.Key, config.InitKeyNumber)
 
-	for i := 0; i < initKeyNumber; i++ {
+	for i := 0; i < config.InitKeyNumber; i++ {
 		key := uuid.New().String()
 		ringPosition := getRingPosition(key)
 		keySlice[i] = &K.Key{

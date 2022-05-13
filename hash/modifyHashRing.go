@@ -14,7 +14,6 @@ func (h *HashRing) AddServer(serverName string) {
 	h.getVirtualNodesLinkedList()
 
 	//redistribute方式: 從插入的節點逆時針找到下一個節點，把中間遇到的user加到自己的KeyList並從順時針方向會遇到的下一個節點刪除，可以用slicing解決
-	// h.distributeUsers()
 	for _, virtualNode := range server.VirtualNodes {
 		nextVirtualNode := virtualNode.NextVirtualNode
 
@@ -44,7 +43,6 @@ func (h *HashRing) RemoveServer(key string) {
 	flag := false
 
 	for _, virtualNode := range h.VirtualNodes {
-		// fmt.Printf("%#v\n%#v\n\n", virtualNode.RingPosition, virtualNode.NextVirtualNode.RingPosition)
 		if virtualNode.OriginServer.Key == key {
 			virtualNode.NextVirtualNode.KeyList = append(virtualNode.KeyList, virtualNode.NextVirtualNode.KeyList...)
 			flag = true
@@ -61,31 +59,11 @@ func (h *HashRing) RemoveServer(key string) {
 	}
 
 	if flag {
-		// for _, v := range newHashRingVirtualNodes {
-		// 	fmt.Printf("%#v\n", v.RingPosition)
-		// }
 		h.VirtualNodes = newHashRingVirtualNodes
 		h.getVirtualNodesLinkedList()
 	} else {
 		fmt.Printf("Key not found...\n")
 	}
-
-	// for i, server := range h.Servers {
-	// 	if server.Key == key {
-	// 		//redistribute方式: 從被刪除的節點往順時鐘方向找到下一個節點，把KeyList全部交給他
-	// 		for _, virtualNode := range server.VirtualNodes {
-	// 			virtualNode.NextVirtualNode.KeyList = append(virtualNode.KeyList, virtualNode.NextVirtualNode.KeyList...)
-	// 		}
-
-	// 		// 這邊修改了h.Server可能會導致range爆開，所以要直接break或return
-	// 		h.Servers = append(h.Servers[:i], h.Servers[i+1:]...)
-	// 		return
-	// 	} else {
-	// 		newHashRingVirtualNodes = append(newHashRingVirtualNodes, server.VirtualNodes...)
-	// 	}
-	// }
-	// h.VirtualNodes = newHashRingVirtualNodes
-	// h.sortVirtualNodes()
 }
 
 func (h *HashRing) ListServerInfo() {
@@ -109,11 +87,6 @@ func (h *HashRing) ListServerInfo() {
 			fmt.Printf("%d ", len(v.KeyList))
 		}
 		fmt.Printf("keys respectively\n")
-
-		// Print when long info is suggest
-		// for _, key := range server.KeyList {
-		// 	fmt.Printf("Key: %s, Position: %v\n", key.Key, key.RingPosition)
-		// }
 	}
 	fmt.Printf("\nTotal Keys: %d", totalKeys)
 	fmt.Printf("\n\n")
